@@ -1,0 +1,22 @@
+# Ignore system and backup files
+*~
+.DS_Store
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+
+# Ignore build artifacts
+/build/
+/dist/
+
+# Ignore dependencies
+/node_modules/
+/vendor/
+
+# Ignore environment-specific configuration files
+.env
+
+# Ignore IDE and editor-specific files
+.idea/
+.vscode/
