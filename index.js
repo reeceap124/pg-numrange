@@ -9,7 +9,7 @@
 //Stretch: timestamp
 
 const fullMatchPattern =
-  /^([\[\(])(-?\d*\.?\d*|null|undefined),(-?\d*\.?\d*|null|undefined)[\]\)]$/
+  /^([\[\(])(-?\d*\.?\d*|null|undefined),(-?\d*\.?\d*|null|undefined)([\]\)])$/
 
 class NumRange {
   constructor() {
@@ -20,10 +20,8 @@ class NumRange {
       const lower = arguments[0]
       const upper = arguments[1]
       const bounds = arguments.length === 3 ? arguments[2] : '(]'
-      const lowerBound =
-        bounds[0] === '[' || bounds[0] === '(' ? bounds[0] : '('
-      const upperBound =
-        bounds[1] === ']' || bounds[1] === ')' ? bounds[1] : ')'
+      const lowerBound = bounds[0]
+      const upperBound = bounds[1]
       rangeString = lowerBound + lower + ',' + upper + upperBound
     } else {
       throw new Error('Invalid number of arguments for Range')
@@ -93,32 +91,19 @@ class NumRange {
       this.lower === lower ? this.lowerInclusive : otherRange.lowerInclusive
     const upperInclusive =
       this.upper === upper ? this.upperInclusive : otherRange.upperInclusive
-    return new NumRange(lower, upper, lowerInclusive, upperInclusive)
+    const boundsString = `${lowerInclusive ? '[' : '('}${
+      upperInclusive ? ']' : ')'
+    }`
+    return new NumRange(lower, upper, boundsString)
   }
 
   // Convert the range to a PostgreSQL compatible string.
   toString() {
-    const lowerBound = this.lowerInclusive ? '[' : '('
-    const upperBound = this.upperInclusive ? ']' : ')'
-    return lowerBound + this.lower + ',' + this.upper + upperBound
+    const lowerBoundString = this.lowerInclusive ? '[' : '('
+    const upperBoundString = this.upperInclusive ? ']' : ')'
+
+    return `${lowerBoundString}${this.lower},${this.upper}${upperBoundString}`
   }
 }
 
-// Example usage:
-const range1 = NumRange.parseRange('[1,5]')
-const range2 = NumRange.parseRange('(3,8)')
-console.log('Range 1: ' + range1.toString())
-console.log('Range 2: ' + range2.toString())
-
-const num = 4
-console.log(`Does ${num} fall within range 1? ${range1.contains(num)}`)
-console.log(`Does ${num} fall within range 2? ${range2.contains(num)}`)
-
-const unionRange = range1.union(range2)
-console.log('Union of Range 1 and Range 2: ' + unionRange.toString())
-
-const intersectionRange = range1.intersection(range2)
-console.log(
-  'Intersection of Range 1 and Range 2: ' +
-    (intersectionRange ? intersectionRange.toString() : 'No intersection')
-)
+module.exports = NumRange
