@@ -3,7 +3,7 @@ const NumRange = require('./index.js') // Adjust the import path as needed
 describe('NumRange', () => {
   describe('Constructor', () => {
     it('should create a valid NumRange from a string', () => {
-      const rangeString = '[-3.5, 10)'
+      const rangeString = '[-3.5,10)'
       const range = new NumRange(rangeString)
       expect(range.lower).toBe(-3.5)
       expect(range.upper).toBe(10)
@@ -11,12 +11,18 @@ describe('NumRange', () => {
       expect(range.upperInclusive).toBe(false)
     })
 
+    it('should allow a NumRange to be made with spaces accidentally in the string', () => {
+      const range = new NumRange('[5, 416.9]')
+      expect(range.lower).toBe(5)
+      expect(range.upper).toBe(416.9)
+    })
+
     it('should create a valid NumRange from two numbers', () => {
       const range = new NumRange(1, 5)
       expect(range.lower).toBe(1)
       expect(range.upper).toBe(5)
       expect(range.lowerInclusive).toBe(false)
-      expect(range.upperInclusive).toBe(false)
+      expect(range.upperInclusive).toBe(true)
     })
 
     it('should create a valid NumRange from two numbers with inclusive bounds', () => {
@@ -43,6 +49,57 @@ describe('NumRange', () => {
       expect(() => new NumRange()).toThrow(
         'Invalid number of arguments for Range'
       )
+    })
+  })
+
+  describe('Omitted values', () => {
+    it('Should create a range with a lower bound and infinite upper bound', () => {
+      const range = new NumRange(2, null, '[)')
+      expect(range.contains(300000)).toBe(true)
+      expect(range.upper).toBe(Infinity)
+      expect(range.lower).toBe(2)
+      expect(range.toString()).toBe('[2,)')
+    })
+
+    it('Should work with upper omitted from string input', () => {
+      const range = new NumRange('(-30.76,]')
+      expect(range.contains(2000)).toBe(true)
+      expect(range.upper).toBe(Infinity)
+      expect(range.lower).toBe(-30.76)
+      expect(range.toString()).toBe('(-30.76,]')
+    })
+
+    it('Should create a range with an upper bound when lower bound is omitted', () => {
+      const range = new NumRange(null, 10, '(]')
+      expect(range.contains(-5000)).toBe(true)
+      expect(range.lower).toBe(-Infinity)
+      expect(range.upper).toBe(10)
+      expect(range.toString()).toBe('(,10]')
+    })
+
+    it('Should work when creating a range with lower omitted from string input', () => {
+      const range = new NumRange('(,500.3)')
+      expect(range.contains(-47.111)).toBe(true)
+      expect(range.lower).toBe(-Infinity)
+      expect(range.upper).toBe(500.3)
+      expect(range.toString()).toBe('(,500.3)')
+    })
+
+    it('Should create an infinite range when both upper and lower are ommitted', () => {
+      const range = new NumRange(null, null)
+      expect(range.contains(500)).toBe(true)
+      expect(range.contains(-500)).toBe(true)
+      expect(range.upper).toBe(Infinity)
+      expect(range.lower).toBe(-Infinity)
+      expect(range.toString()).toBe('(,]')
+    })
+    it('Should create an infinite range when both upper and lower are ommitted from string input', () => {
+      const range = new NumRange('[,]')
+      expect(range.contains(23000.6)).toBe(true)
+      expect(range.contains(-5.19111)).toBe(true)
+      expect(range.upper).toBe(Infinity)
+      expect(range.lower).toBe(-Infinity)
+      expect(range.toString()).toBe('[,]')
     })
   })
 
@@ -73,7 +130,7 @@ describe('NumRange', () => {
       expect(unionRange.lower).toBe(2)
       expect(unionRange.upper).toBe(8)
       expect(unionRange.lowerInclusive).toBe(false)
-      expect(unionRange.upperInclusive).toBe(false)
+      expect(unionRange.upperInclusive).toBe(true)
     })
   })
 
