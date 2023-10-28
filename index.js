@@ -2,41 +2,45 @@ const fullMatchPattern =
   /^([\[\(])(-?\d*\.?\d*|null|undefined),(-?\d*\.?\d*|null|undefined)([\]\)])$/
 
 class NumRange {
-  constructor() {
-    let rangeString
-
-    if (arguments.length === 1) {
-      rangeString = arguments[0].replace(/\s/g, '')
-    } else if (arguments.length === 2 || arguments.length === 3) {
-      const lower = arguments[0] || ''
-      const upper = arguments[1] || ''
-      const bounds = arguments.length === 3 ? arguments[2] : '(]'
-      const lowerBound = bounds[0]
-      const upperBound = bounds[1]
-      rangeString = lowerBound + lower + ',' + upper + upperBound
-    } else {
-      throw new Error('Invalid number of arguments for Range')
+  constructor(lower, upper, lowerInclusive = false, upperInclusive = true) {
+    lower = lower || -Infinity
+    upper = upper || Infinity
+    if (
+      typeof lowerInclusive !== 'boolean' ||
+      typeof upperInclusive !== 'boolean'
+    ) {
+      throw new Error('lowerInclusive and upperInclusive must be booleans')
     }
-    const matches = rangeString.match(fullMatchPattern)
-    if (matches) {
-      const lower = matches[2] ? Number(matches[2]) : -Infinity
-      const upper = matches[3] ? Number(matches[3]) : Infinity
-      const lowerBound = matches[1]
-      const upperBound = matches[4]
+    if (isNaN(lower) || isNaN(upper)) {
+      throw new Error('Lower and upper bounds must be numbers.')
+    }
 
-      if (lower <= upper) {
-        const lowerInclusive = lowerBound === '['
-        const upperInclusive = upperBound === ']'
-        this.lower = lower
-        this.upper = upper
-        this.lowerInclusive = lowerInclusive
-        this.upperInclusive = upperInclusive
-      } else {
-        throw new Error(`Lower value can not be greater than upper value.`)
-      }
-    } else {
+    if (lower > upper) {
+      throw new Error('Lower value cannot be greater than upper value.')
+    }
+
+    this.lower = lower
+    this.upper = upper
+    this.lowerInclusive = lowerInclusive
+    this.upperInclusive = upperInclusive
+  }
+
+  static parse(rangeString) {
+    if (typeof rangeString !== 'string') {
+      throw new Error('Invalid input for Range')
+    }
+    rangeString = rangeString.replace(/\s/g, '')
+    const matches = rangeString.match(fullMatchPattern)
+    if (!matches) {
       throw new Error('Invalid input format for Range')
     }
+
+    const lower = matches[2] ? Number(matches[2]) : -Infinity
+    const upper = matches[3] ? Number(matches[3]) : Infinity
+    const lowerInclusive = matches[1] === '['
+    const upperInclusive = matches[4] === ']'
+
+    return new NumRange(lower, upper, lowerInclusive, upperInclusive)
   }
 
   // Check if a number falls within the bounds of the range.
@@ -64,11 +68,8 @@ class NumRange {
       this.lower === lower ? this.lowerInclusive : otherRange.lowerInclusive
     const upperInclusive =
       this.upper === upper ? this.upperInclusive : otherRange.upperInclusive
-    return new NumRange(
-      `${lowerInclusive ? '[' : '('}${lower},${upper}${
-        upperInclusive ? ']' : ')'
-      }`
-    )
+
+    return new NumRange(lower, upper, lowerInclusive, upperInclusive)
   }
 
   // Compute the intersection of two numranges.
@@ -87,10 +88,8 @@ class NumRange {
       this.lower === lower ? this.lowerInclusive : otherRange.lowerInclusive
     const upperInclusive =
       this.upper === upper ? this.upperInclusive : otherRange.upperInclusive
-    const boundsString = `${lowerInclusive ? '[' : '('}${
-      upperInclusive ? ']' : ')'
-    }`
-    return new NumRange(lower, upper, boundsString)
+
+    return new NumRange(lower, upper, lowerInclusive, upperInclusive)
   }
 
   // Convert the range to a PostgreSQL compatible string.
