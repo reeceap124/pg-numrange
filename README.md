@@ -21,7 +21,7 @@ The `NumRange` class is a JavaScript implementation for working with numerical r
 Here are some examples of how to create and work with NumRanges
 
 ```javascript
-const NumRange = require('./NumRange')
+const NumRange = require('pg_numrange')
 // Create a NumRange object with inclusive bounds.
 const range1 = new NumRange(1, 10, true, true)
 
