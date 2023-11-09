@@ -1,13 +1,17 @@
 {
   "name": "pg-numrange",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Built to help parse, work with, and create PostgreSQL compatible range strings.",
   "main": "index.js",
   "repository": "https://github.com/reeceap124/pg-numrange",
   "scripts": {
     "test": "jest"
   },
-  "keywords": ["postgresql", "range", "numrange"],
+  "keywords": [
+    "postgresql",
+    "range",
+    "numrange"
+  ],
   "author": "Reece Pierson",
   "license": "MIT",
   "devDependencies": {
