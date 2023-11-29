@@ -2,25 +2,36 @@ const fullMatchPattern =
   /^([\[\(])(-?\d*\.?\d*|null|undefined),(-?\d*\.?\d*|null|undefined)([\]\)])$/
 
 class NumRange {
+  #processParameter(input, isLower = false) {
+    // Non-zero falsey values return infinity
+    if (!!input === false && input !== 0) {
+        return isLower ? -Infinity : Infinity
+    // all other non-numeric values return undefined
+    } else if (isNaN(input)) {
+        return undefined
+    } else {
+        return Number(input)
+    }
+  }
   constructor(lower, upper, lowerInclusive = false, upperInclusive = true) {
-    lower = lower || -Infinity
-    upper = upper || Infinity
+    const lowerVal =  this.#processParameter(lower, true)
+    const upperVal = this.#processParameter(upper)
     if (
       typeof lowerInclusive !== 'boolean' ||
       typeof upperInclusive !== 'boolean'
     ) {
       throw new Error('lowerInclusive and upperInclusive must be booleans')
     }
-    if (isNaN(lower) || isNaN(upper)) {
+    if (isNaN(lowerVal) || isNaN(upperVal)) {
       throw new Error('Lower and upper bounds must be numbers.')
     }
 
-    if (lower > upper) {
+    if (lowerVal > upperVal) {
       throw new Error('Lower value cannot be greater than upper value.')
     }
 
-    this.lower = lower
-    this.upper = upper
+    this.lower = lowerVal
+    this.upper = upperVal
     this.lowerInclusive = lowerInclusive
     this.upperInclusive = upperInclusive
   }
@@ -35,8 +46,8 @@ class NumRange {
       throw new Error('Invalid input format for Range')
     }
 
-    const lower = matches[2] ? Number(matches[2]) : -Infinity
-    const upper = matches[3] ? Number(matches[3]) : Infinity
+    const lower = matches[2]
+    const upper = matches[3]
     const lowerInclusive = matches[1] === '['
     const upperInclusive = matches[4] === ']'
 

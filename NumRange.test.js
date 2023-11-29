@@ -11,6 +11,12 @@ describe('NumRange', () => {
       expect(range.upperInclusive).toBe(false)
     })
 
+    it('should parse a lower zero as 0, not -Infinity', () => {
+      const rangeString = '[0,100]'
+      const range = NumRange.parse(rangeString)
+      expect(range.lower).toBe(0)
+    })
+
     it('should allow a NumRange to be made with spaces accidentally in the string', () => {
       const range = NumRange.parse('[5, 416.9]')
       expect(range.lower).toBe(5)
